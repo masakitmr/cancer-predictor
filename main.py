@@ -1,20 +1,22 @@
 import streamlit as st
 import joblib
-import base64
-import tempfile
 import numpy as np
-from model_data import model_base64  # ← Base64文字列を読み込む
+import tempfile
+import base64
+from model_data import model_base64
 
-# --- モデル復元 ---
+# モデルを一時ファイルとして復元
 @st.cache_resource
 def load_model():
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pkl") as tmp:
-        tmp.write(base64.b64decode(model_base64))
-        return joblib.load(tmp.name)
+    decoded = base64.b64decode(model_base64)
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(decoded)
+        tmp_path = tmp.name
+    return joblib.load(tmp_path)
 
 model = load_model()
 
-# --- UI ---
+# アプリUI
 st.title("がん予測AIアプリ")
 st.write("以下の特徴量を入力してください：")
 
@@ -25,6 +27,5 @@ mean_area = st.number_input("平均面積", min_value=0.0)
 
 if st.button("予測する"):
     input_data = np.array([[mean_radius, mean_texture, mean_perimeter, mean_area]])
-    prediction = model.predict(input_data)
-    result = "悪性の可能性あり" if prediction[0] == 0 else "良性の可能性が高い"
-    st.success(f"予測結果：{result}")
+    prediction = model.predict(input_data)[0]
+    st.success(f"予測結果：{'がんの可能性あり' if prediction == 1 else 'がんの可能性なし'}")
