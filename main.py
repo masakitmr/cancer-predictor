@@ -1,26 +1,20 @@
 import streamlit as st
 import joblib
 import numpy as np
-import tempfile
 import base64
+import tempfile
 from model_data import model_base64
 
-# モデルを一時ファイルとして復元
 @st.cache_resource
 def load_model():
-    try:
-        decoded = base64.b64decode(model_base64)
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
-            tmp.write(decoded)
-            tmp_path = tmp.name
-        return joblib.load(tmp_path)
-    except Exception as e:
-        st.error(f"モデルの読み込みに失敗しました: {e}")
-        raise
+    decoded = base64.b64decode(model_base64)
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(decoded)
+        tmp_path = tmp.name
+    return joblib.load(tmp_path)
 
 model = load_model()
 
-# アプリUI
 st.title("がん予測AIアプリ")
 st.write("以下の特徴量を入力してください：")
 
