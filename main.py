@@ -8,11 +8,15 @@ from model_data import model_base64
 # モデルを一時ファイルとして復元
 @st.cache_resource
 def load_model():
-    decoded = base64.b64decode(model_base64)
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        tmp.write(decoded)
-        tmp_path = tmp.name
-    return joblib.load(tmp_path)
+    try:
+        decoded = base64.b64decode(model_base64)
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(decoded)
+            tmp_path = tmp.name
+        return joblib.load(tmp_path)
+    except Exception as e:
+        st.error(f"モデルの読み込みに失敗しました: {e}")
+        raise
 
 model = load_model()
 
